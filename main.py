@@ -31,18 +31,38 @@ corpus = []
 for i in range(0,len(messages)):
     #removing special charachters
     review = re.sub('[^a-zA-Z]',' ',messages['title'][i])
+    
     #converting all letters in lowercase
     review = review.lower()
+    
     #spliting all the words
     review = review.split()
+    
     #removing stopwords
     review = [(word) for word in review if not word in stopwords.words('english')]
+    
     #joining the words with " ", creating the sentences and appending it in corpus
     review = ' '.join(review)
 
     corpus.append(review)
 #all the words in corpus is represented in one hot representation
 onehot_repr=[one_hot(words,voc_size) for words in corpus]
+
+#Embedded representation of one hot representation
+sent_length = 20
+embedded_docs = pad_sequences(onehot_repr,padding='pre',maxlen=sent_length)
+
+
+#creating Neural network model
+embedding_vector_feature = 40
+model = Sequential()
+model.add(Embedding(voc_size,embedding_vector_feature,input_length=sent_length))
+model.add(Bidirectional(LSTM(100)))
+model.add(Dropout(0.3))
+model.add(Dense(1,activation='sigmoid'))
+model.compile(loss='binary_crossentropy',optimizer='adam',metrics=['accuracy'])
+print(model.summary())
+
 
 
 
